@@ -146,10 +146,45 @@ cp -r Latte-news-fetcher ~/.openclaw/workspace/skills/latte-news-fetcher
       ↓ 失败（无存档）
 4. RemovePaywall / smry.ai
       ↓ 失败
-5. 搜索替代信源（BBC/Reuters/AP）
+5. Tavily 搜索替代信源
       ↓ 失败
-6. 诚实告知 + 提供已获取的摘要
+6. 询问用户登录（会员网站）
+      ↓ 失败
+7. 诚实告知 + 提供已获取的摘要
 ```
+
+### Tavily 搜索替代信源
+
+当无法绕过付费墙时，使用 Tavily 搜索同一事件的其他报道：
+
+```bash
+curl -s --request POST \
+  --url https://api.tavily.com/search \
+  --header "Authorization: Bearer $TAVILY_API_KEY" \
+  --header 'Content-Type: application/json' \
+  --data '{
+    "query": "China 2026 GDP growth target 4.5% 5%",
+    "max_results": 5,
+    "search_depth": "basic"
+  }'
+```
+
+**替代信源优先级：**
+1. BBC / Reuters / AP（国际新闻）
+2. 官方来源（如中国国务院新闻办 SCIO）
+3. 国内免费媒体
+4. 社交媒体（Twitter/X 记者账号）
+
+**综合多信源**：选择 2-3 个信源，综合整理后提供给用户，注明来源链接。
+
+### 会员登录网站处理
+
+⚠️ **特殊类型**：部分网站（如日经中文网）不是付费墙，而是需要**免费会员登录**
+
+**处理流程：**
+1. 尝试 smry.ai → 内容截断说明需要登录
+2. 使用 Tavily 搜索替代信源（推荐）
+3. 询问用户是否可以登录 → 使用 `browser profile="chrome"` 访问
 
 ### archive.today 使用技巧
 
@@ -263,6 +298,14 @@ latte-news-fetcher/
 ---
 
 ## 📝 更新日志
+
+### v3.2.0 (2026-03-06)
+
+- 🆕 **新增 Tavily API 完整使用示例** - curl 命令可直接复制使用
+- 🆕 **新增"会员登录网站处理"流程** - 日经中文网等免费会员网站的处理方案
+- 🆕 **新增"综合多信源"策略** - 无法获取原文时，从 2-3 个替代信源综合整理
+- 🔧 **替代信源优先级更新** - 新增"官方来源"（如 SCIO）
+- 📊 **工作流程图增加用户登录分支**
 
 ### v3.1.0 (2026-03-06)
 

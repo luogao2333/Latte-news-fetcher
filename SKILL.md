@@ -326,15 +326,64 @@ browser action=snapshot
 
 ### 搜索替代信源
 
+**使用 Tavily API 搜索同一事件的免费报道：**
+
 ```bash
-# 使用 Tavily 搜索同一事件的免费报道
-搜索关键词: "新闻标题关键词 (site:bbc.com OR site:reuters.com OR site:apnews.com)"
+curl -s --request POST \
+  --url https://api.tavily.com/search \
+  --header "Authorization: Bearer $TAVILY_API_KEY" \
+  --header 'Content-Type: application/json' \
+  --data '{
+    "query": "China 2026 GDP growth target 4.5% 5% economic",
+    "max_results": 5,
+    "search_depth": "basic"
+  }'
 ```
 
 **替代优先级：**
 1. BBC / Reuters / AP（国际）
-2. 国内免费媒体（国内）
-3. 社交媒体（Twitter/X 记者账号）
+2. 官方来源（如中国国务院新闻办 SCIO）
+3. 国内免费媒体（国内）
+4. 社交媒体（Twitter/X 记者账号）
+
+**综合多信源：**
+当无法获取原文全文时，从 Tavily 搜索结果中选择 2-3 个信源，综合整理后提供给用户，并注明来源链接。
+
+---
+
+### 需要会员登录的网站处理
+
+⚠️ **特殊类型**：部分网站（如日经中文网）不是付费墙，而是需要**免费会员登录**才能看全文
+
+**处理流程：**
+
+```
+1. 尝试 smry.ai 获取
+   ├── 成功但内容截断 → 说明需要登录
+   └── 失败 → 继续下一步
+
+2. 使用 Tavily 搜索替代信源（推荐）
+   - 搜索同一事件的其他媒体报道
+   - 综合多信源整理
+
+3. 请求用户登录（备选）
+   - 询问用户是否有会员账号
+   - 如有，请用户在 Chrome 中登录
+   - 使用 browser profile="chrome" 访问
+   - 注意：需要用户先点击 OpenClaw Browser Relay 扩展启用
+```
+
+**用户登录操作提示：**
+```
+"你有日经中文网会员账号吗？
+
+如果有：
+1. 在 Chrome 浏览器中打开 https://cn.nikkei.com/user/login.html 并登录
+2. 登录成功后告诉我
+3. 我会通过你的浏览器访问文章全文
+
+或者，我可以用 Tavily 搜索其他媒体对同一事件的报道。"
+```
 
 ---
 
@@ -461,7 +510,14 @@ browser action=snapshot
 
 ## 📝 更新日志
 
-- **2026-03-06**: 
+- **2026-03-06 (v2)**: 
+  - 新增"需要会员登录的网站处理"流程（如日经中文网）
+  - 新增 Tavily API 完整使用示例（curl 命令）
+  - 新增"综合多信源"策略说明
+  - 替代信源优先级新增"官方来源"
+  - 流程图增加"用户登录"分支提示
+
+- **2026-03-06 (v1)**: 
   - 首页获取改用 browser 为首选（主流媒体反爬机制）
   - archive.today 流程补充"点击存档链接"步骤
   - 新增"用户指定网站"分支
